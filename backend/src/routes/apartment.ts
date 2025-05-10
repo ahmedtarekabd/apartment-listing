@@ -3,18 +3,16 @@ import {
   getApartments,
   getApartmentById,
   addApartment,
-} from '../controllers/apartmentController.js'
-import { validate } from '../middleware/validationMiddleware.js'
+} from '../controllers/apartmentController'
+import { validate } from '../middleware/validationMiddleware'
 import {
   apartmentsIdSchema,
   apartmentsSchema,
-} from '../validators/apartmentSchema.js'
-// import { authenticate } from '../middleware/auth.js'
+} from '../validators/apartmentSchema'
+// import { authenticate } from '../middleware/auth'
 
 const router = Router()
 // router.use(authenticate)
-
-router.use('/appartements', router)
 
 // An API endpoint for listing apartments.
 router.get('/', getApartments)
