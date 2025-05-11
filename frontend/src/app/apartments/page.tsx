@@ -14,7 +14,7 @@ import { Plus } from 'lucide-react'
 import { Apartment } from '@/types/apartments'
 import SearchFilter from '@/components/search-filter'
 import ApartmentCard from '@/components/apartment-card'
-import { SearchParams } from '@/types/params'
+import { PaginatedResponse, SearchParams } from '@/types/params'
 
 export default async function ApartmentsPage({
   searchParams,
@@ -24,23 +24,45 @@ export default async function ApartmentsPage({
   const {
     page: pageParam,
     search: searchParam,
-    filter: filterParam,
+    projects: projectsParam,
   } = await searchParams
   const page = Number(pageParam) || 1
   const search = (searchParam as string) || ''
-  const filter = (filterParam as string) || ''
+  const projects = (projectsParam as string) || ''
 
-  const response = await axios.get('/apartments', {
-    params: {
-      page,
-      limit: 9,
-      search,
-      filter,
-    },
-  })
+  let response
 
-  const apartments: Apartment[] = response.data
-  const totalPages = response.data.totalPages || 1
+  try {
+    response = await axios.get<PaginatedResponse<Apartment>>('/apartments', {
+      params: {
+        page,
+        limit: 9,
+        search,
+        projects,
+      },
+    })
+  } catch (error) {
+    console.error('Error fetching apartments:', error)
+    return (
+      <div className='flex min-h-[400px] items-center justify-center'>
+        <div className='border-primary h-12 w-12 animate-spin rounded-full border-t-2 border-b-2'></div>
+      </div>
+    )
+  }
+
+  const apartments: Apartment[] = response.data.data
+  const nextPage = response.data.meta.links.next
+  const prevPage = response.data.meta.links.prev
+  const firstPage = response.data.meta.links.first
+  const lastPage = response.data.meta.links.last
+  const totalPages = response.data.meta.totalPages || 1
+
+  console.log('Apartments:', apartments)
+  console.log('Next Page:', nextPage)
+  console.log('Prev Page:', prevPage)
+  console.log('First Page:', firstPage)
+  console.log('Last Page:', lastPage)
+  console.log('Total Pages:', totalPages)
 
   return (
     <div className='container mx-auto px-4 py-8'>
@@ -55,7 +77,15 @@ export default async function ApartmentsPage({
       </div>
 
       {/* Search & Filter */}
-      <SearchFilter search={search as string} filter={filter as string} />
+      <SearchFilter search={search as string} filter={projects as string} />
+
+      {/* {loading ? (
+        <div className='flex min-h-[400px] items-center justify-center'>
+          <div className='border-primary h-12 w-12 animate-spin rounded-full border-t-2 border-b-2'></div>
+        </div>
+      ) : error ? (
+        <div className='py-8 text-center text-red-500'>{error}</div>
+      ) : } */}
 
       {apartments.length === 0 ? (
         <div className='py-8 text-center'>
@@ -74,32 +104,44 @@ export default async function ApartmentsPage({
       {totalPages > 1 && (
         <Pagination className='mt-8'>
           <PaginationContent>
-            {page > 1 && (
+            {prevPage && (
               <PaginationItem>
-                <PaginationPrevious
-                  href={`/apartments?page=${page - 1}&search=${search}&filter=${filter}`}
-                />
+                <PaginationPrevious href={prevPage} />
               </PaginationItem>
             )}
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-              (pageNum) => (
+            <PaginationItem>
+              <Link href={firstPage}>
+                <Button variant='ghost' className='mx-2'>
+                  First
+                </Button>
+              </Link>
+            </PaginationItem>
+
+            {Array.from({ length: 5 }, (_, i) => page - 2 + i)
+              .filter((pageNum) => pageNum > 0 && pageNum <= totalPages)
+              .map((pageNum) => (
                 <PaginationItem key={pageNum}>
                   <PaginationLink
-                    href={`/apartments?page=${pageNum}&search=${search}&filter=${filter}`}
+                    href={`/apartments?page=${pageNum}&search=${search}&projects=${projects}`}
                     isActive={pageNum === page}
                   >
                     {pageNum}
                   </PaginationLink>
                 </PaginationItem>
-              ),
-            )}
+              ))}
 
-            {page < totalPages && (
+            <PaginationItem>
+              <Link href={lastPage}>
+                <Button variant='ghost' className='mx-2'>
+                  Last
+                </Button>
+              </Link>
+            </PaginationItem>
+
+            {nextPage && (
               <PaginationItem>
-                <PaginationNext
-                  href={`/apartments?page=${page + 1}&search=${search}&filter=${filter}`}
-                />
+                <PaginationNext href={nextPage} />
               </PaginationItem>
             )}
           </PaginationContent>

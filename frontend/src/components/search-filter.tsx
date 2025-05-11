@@ -27,7 +27,7 @@ const SearchFilter = ({
     const params = new URLSearchParams()
     params.set('page', '1')
     if (searchInput) params.set('search', searchInput)
-    if (filterInput) params.set('filter', filterInput)
+    if (filterInput && filterInput != 'all') params.set('projects', filterInput)
     router.push(`/apartments?${params.toString()}`)
   }
   return (
@@ -57,9 +57,9 @@ const SearchFilter = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value='all'>All Projects</SelectItem>
-            <SelectItem value='project1'>Project 1</SelectItem>
-            <SelectItem value='project2'>Project 2</SelectItem>
-            <SelectItem value='project3'>Project 3</SelectItem>
+            <SelectItem value='project A'>Project A</SelectItem>
+            <SelectItem value='project B'>Project B</SelectItem>
+            <SelectItem value='project C'>Project C</SelectItem>
           </SelectContent>
         </Select>
       </div>
