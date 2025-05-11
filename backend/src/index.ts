@@ -1,15 +1,15 @@
 import express, { Request, Response } from 'express'
-import appartementRouter from './routes/apartment'
+import routes from './routes/index'
 import dotenv from 'dotenv'
 
 dotenv.config()
 
 const app = express()
 const domain = process.env.DOMAIN || 'http://localhost'
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 5000
 
 app.use(express.json())
-app.use('/apartements', appartementRouter)
+app.use('/api/v1', routes)
 
 app.listen(port, () => {
   console.log(`Port env:${process.env.PORT}`)

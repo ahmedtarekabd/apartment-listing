@@ -9,10 +9,8 @@ import {
   apartmentsIdSchema,
   apartmentsSchema,
 } from '../validators/apartmentSchema'
-// import { authenticate } from '../middleware/auth'
 
 const router = Router()
-// router.use(authenticate)
 
 // An API endpoint for listing apartments.
 router.get('/', getApartments)
