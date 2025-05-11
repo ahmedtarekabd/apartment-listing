@@ -11,6 +11,22 @@ export const apartmentsSchema = z.object({
   unit_number: z.string().min(1).max(10),
   description: z.string().min(1).max(500),
   price: z.number().positive(),
+  images: z.array(z.string()).optional(),
+  address: z.string().min(1).max(100),
+  city: z.string().min(1).max(50),
+  country: z.string().min(1).max(50),
+  created_at: z.preprocess(
+    (arg) => (arg ? new Date(arg as string) : undefined),
+    z.date()
+  ),
+  updated_at: z.preprocess(
+    (arg) => (arg ? new Date(arg as string) : undefined),
+    z.date()
+  ),
+  deleted_at: z.preprocess(
+    (arg) => (arg ? new Date(arg as string) : undefined),
+    z.date().optional()
+  ),
 })
 
 export const apartmentsArraySchema = z.array(apartmentsSchema)

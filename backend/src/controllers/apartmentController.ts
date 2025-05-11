@@ -7,6 +7,13 @@ const apartmentsList = [
     unit_number: '101',
     description: 'A cozy apartment with a beautiful view.',
     price: 1200,
+    images: [],
+    address: '',
+    city: '',
+    country: '',
+    created_at: '',
+    updated_at: '',
+    deleted_at: '',
   },
   {
     id: 2,
@@ -14,6 +21,13 @@ const apartmentsList = [
     unit_number: '102',
     description: 'A spacious apartment with modern amenities.',
     price: 1500,
+    images: [],
+    address: '',
+    city: '',
+    country: '',
+    created_at: '',
+    updated_at: '',
+    deleted_at: '',
   },
 ]
 
@@ -45,13 +59,29 @@ export const getApartmentById = async (req: Request, res: Response) => {
 
 export const addApartment = async (req: Request, res: Response) => {
   try {
-    const { unit_name, unit_number, description, price } = req.body
+    const {
+      unit_name,
+      unit_number,
+      description,
+      price,
+      images,
+      address,
+      city,
+      country,
+    } = req.body
     const newApartment = {
       id: apartmentsList.length + 1,
       unit_name,
       unit_number,
       description,
       price,
+      images,
+      address,
+      city,
+      country,
+      created_at: '',
+      updated_at: '',
+      deleted_at: '',
     }
     apartmentsList.push(newApartment)
 
