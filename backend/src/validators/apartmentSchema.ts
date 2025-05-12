@@ -29,4 +29,26 @@ export const apartmentsSchema = z.object({
   ),
 })
 
+export const paginationSchema = z.object({
+  page: z
+    .preprocess(
+      Number,
+      z.number().int().positive().min(1, 'Page must be greater than 0')
+    )
+    .optional(),
+  limit: z
+    .preprocess(
+      Number,
+      z
+        .number()
+        .int()
+        .positive()
+        .min(1, 'Limit must be greater than 0')
+        .max(100, 'Limit must be less than or equal to 100')
+    )
+    .optional(),
+  search: z.string().optional(),
+  projects: z.string().optional(),
+})
+
 export const apartmentsArraySchema = z.array(apartmentsSchema)

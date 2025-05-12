@@ -120,7 +120,7 @@ const apartmentsList = [
     country: '',
     created_at: '',
     updated_at: '',
-    deleted_at: '',
+    deleted_at: '', 
   },
   {
     id: 9,
@@ -160,11 +160,13 @@ export const getApartments = async (req: Request, res: Response) => {
     const pageNumber = Number(page)
     const limitNumber = Number(limit)
     const offset = (pageNumber - 1) * limitNumber
+
     const filteredApartments = apartmentsList.filter((apartment) => {
       const searchLower = search.toString().toLowerCase()
       const searchMatch =
         apartment.unit_name.toLowerCase().includes(searchLower) ||
         apartment.unit_number.toLowerCase().includes(searchLower) ||
+        apartment.project.toLowerCase().includes(searchLower) ||
         apartment.description.toLowerCase().includes(searchLower)
 
       const projectMatch = strToList(projects.toString()).some((project) => {
@@ -175,15 +177,19 @@ export const getApartments = async (req: Request, res: Response) => {
         (searchMatch || searchLower === '') && (projectMatch || projects === '')
       )
     })
+
     const apartments = filteredApartments.slice(offset, offset + limitNumber)
     const totalPages = Math.ceil(filteredApartments.length / limitNumber)
     if (apartments.length === 0)
-      return void res.status(404).json({ error: 'No apartments found' })
+      return void res
+        .status(404)
+        .json({ error: 'No apartments found. Try adjusting your search.' })
 
-    if (pageNumber < 1 || limitNumber < 1)
+    if (offset >= apartmentsList.length)
       return void res.status(400).json({
-        error: 'Page and limit must be greater than 0',
+        error: 'Page number exceeds total pages',
       })
+
     res.status(200).json({
       data: apartments,
       meta: {

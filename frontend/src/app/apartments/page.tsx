@@ -23,46 +23,46 @@ export default async function ApartmentsPage({
 }) {
   const {
     page: pageParam,
+    limit: limitParam,
     search: searchParam,
     projects: projectsParam,
   } = await searchParams
   const page = Number(pageParam) || 1
+  const limit = Number(limitParam) || 9
   const search = (searchParam as string) || ''
   const projects = (projectsParam as string) || ''
 
   let response
+  let errorMessage = ''
 
   try {
     response = await axios.get<PaginatedResponse<Apartment>>('/apartments', {
       params: {
         page,
-        limit: 9,
+        limit,
         search,
         projects,
       },
     })
   } catch (error) {
     console.error('Error fetching apartments:', error)
-    return (
-      <div className='flex min-h-[400px] items-center justify-center'>
-        <div className='border-primary h-12 w-12 animate-spin rounded-full border-t-2 border-b-2'></div>
-      </div>
-    )
+    // 404 is considered as warning - Empty data
+
+    // Handle other errors
+    if (axios.isAxiosError(error) && error.status != 404) {
+      console.error('Error fetching apartments:', error.status)
+      errorMessage =
+        `${error.message} - ${error.response?.data.error}` ||
+        'Failed to fetch apartments.'
+    }
   }
 
-  const apartments: Apartment[] = response.data.data
-  const nextPage = response.data.meta.links.next
-  const prevPage = response.data.meta.links.prev
-  const firstPage = response.data.meta.links.first
-  const lastPage = response.data.meta.links.last
-  const totalPages = response.data.meta.totalPages || 1
-
-  console.log('Apartments:', apartments)
-  console.log('Next Page:', nextPage)
-  console.log('Prev Page:', prevPage)
-  console.log('First Page:', firstPage)
-  console.log('Last Page:', lastPage)
-  console.log('Total Pages:', totalPages)
+  const apartments: Apartment[] = response?.data.data || []
+  const nextPage = response?.data.meta.links.next
+  const prevPage = response?.data.meta.links.prev
+  const firstPage = response?.data.meta.links.first
+  const lastPage = response?.data.meta.links.last
+  const totalPages = response?.data.meta.totalPages || 1
 
   return (
     <div className='container mx-auto px-4 py-8'>
@@ -79,15 +79,9 @@ export default async function ApartmentsPage({
       {/* Search & Filter */}
       <SearchFilter search={search as string} filter={projects as string} />
 
-      {/* {loading ? (
-        <div className='flex min-h-[400px] items-center justify-center'>
-          <div className='border-primary h-12 w-12 animate-spin rounded-full border-t-2 border-b-2'></div>
-        </div>
-      ) : error ? (
-        <div className='py-8 text-center text-red-500'>{error}</div>
-      ) : } */}
-
-      {apartments.length === 0 ? (
+      {errorMessage ? (
+        <div className='py-8 text-center text-red-500'>{errorMessage}</div>
+      ) : apartments.length === 0 ? (
         <div className='py-8 text-center'>
           <p className='text-muted-foreground'>
             No apartments found. Try adjusting your search.
@@ -110,13 +104,15 @@ export default async function ApartmentsPage({
               </PaginationItem>
             )}
 
-            <PaginationItem>
-              <Link href={firstPage}>
-                <Button variant='ghost' className='mx-2'>
-                  First
-                </Button>
-              </Link>
-            </PaginationItem>
+            {firstPage && (
+              <PaginationItem>
+                <Link href={firstPage}>
+                  <Button variant='ghost' className='mx-2'>
+                    First
+                  </Button>
+                </Link>
+              </PaginationItem>
+            )}
 
             {Array.from({ length: 5 }, (_, i) => page - 2 + i)
               .filter((pageNum) => pageNum > 0 && pageNum <= totalPages)
@@ -131,13 +127,15 @@ export default async function ApartmentsPage({
                 </PaginationItem>
               ))}
 
-            <PaginationItem>
-              <Link href={lastPage}>
-                <Button variant='ghost' className='mx-2'>
-                  Last
-                </Button>
-              </Link>
-            </PaginationItem>
+            {lastPage && (
+              <PaginationItem>
+                <Link href={lastPage}>
+                  <Button variant='ghost' className='mx-2'>
+                    Last
+                  </Button>
+                </Link>
+              </PaginationItem>
+            )}
 
             {nextPage && (
               <PaginationItem>

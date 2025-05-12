@@ -8,12 +8,13 @@ import { validate } from '../middleware/validationMiddleware'
 import {
   apartmentsIdSchema,
   apartmentsSchema,
+  paginationSchema,
 } from '../validators/apartmentSchema'
 
 const router = Router()
 
 // An API endpoint for listing apartments.
-router.get('/', getApartments)
+router.get('/', validate({ query: paginationSchema }), getApartments)
 
 // An API endpoint for getting apartment details.
 router.get('/:id', validate({ params: apartmentsIdSchema }), getApartmentById)
