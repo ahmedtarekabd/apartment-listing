@@ -36,6 +36,7 @@ This is a full-stack application for managing apartment listings. It consists of
 
 - **Backend**:
 
+  - [Postman API Docs](https://documenter.getpostman.com/view/31783929/2sB2qUmPrw)
   - RESTful API for apartment management.
   - Pagination, sorting, and filtering support.
   - Database integration with Prisma ORM.
