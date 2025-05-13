@@ -26,11 +26,15 @@ export default async function ApartmentsPage({
     limit: limitParam,
     search: searchParam,
     projects: projectsParam,
+    sortBy: sortByParam,
+    sortOrder: sortOrderParam,
   } = await searchParams
   const page = Number(pageParam) || 1
   const limit = Number(limitParam) || 9
   const search = (searchParam as string) || ''
   const projects = (projectsParam as string) || ''
+  const sortBy = (sortByParam as string) || 'created_at'
+  const sortOrder = (sortOrderParam as string) || 'desc'
 
   let response
   let errorMessage = ''
@@ -42,6 +46,8 @@ export default async function ApartmentsPage({
         limit,
         search,
         projects,
+        sortBy,
+        sortOrder,
       },
     })
   } catch (error) {
@@ -77,7 +83,12 @@ export default async function ApartmentsPage({
       </div>
 
       {/* Search & Filter */}
-      <SearchFilter search={search as string} filter={projects as string} />
+      <SearchFilter
+        search={search}
+        filter={projects}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+      />
 
       {errorMessage ? (
         <div className='py-8 text-center text-red-500'>{errorMessage}</div>

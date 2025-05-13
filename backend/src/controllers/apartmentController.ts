@@ -1,11 +1,17 @@
 import { Request, Response } from 'express'
-import { strToList } from '../lib/utils'
 import prisma from '../database/prisma'
 import { Prisma } from '../generated/prisma'
 
 export const getApartments = async (req: Request, res: Response) => {
   try {
-    const { page = 1, limit = 9, search = '', projects = '' } = req.query
+    const {
+      page = 1,
+      limit = 9,
+      search = '',
+      projects = '',
+      sortBy = 'created_at',
+      sortOrder = 'desc',
+    } = req.query
     const pageNumber = Number(page)
     const limitNumber = Number(limit)
     const offset = (pageNumber - 1) * limitNumber
@@ -33,19 +39,14 @@ export const getApartments = async (req: Request, res: Response) => {
                     mode: Prisma.QueryMode.insensitive,
                   },
                 },
-                {
-                  description: {
-                    contains: search.toString(),
-                    mode: Prisma.QueryMode.insensitive,
-                  },
-                },
               ]
             : undefined,
         },
         {
           project: projects
             ? {
-                in: strToList(projects.toString()),
+                contains: projects.toString(),
+                mode: Prisma.QueryMode.insensitive,
               }
             : undefined,
         },
@@ -58,7 +59,7 @@ export const getApartments = async (req: Request, res: Response) => {
         take: limitNumber,
         where: where,
         orderBy: {
-          created_at: 'desc',
+          [sortBy.toString()]: sortOrder.toString() === 'asc' ? 'asc' : 'desc',
         },
       }),
       prisma.apartment.count({ where: where }),
@@ -110,7 +111,6 @@ export const getApartmentById = async (req: Request, res: Response) => {
         id: id,
       },
     })
-    console.log('Apartment:', apartment)
     if (!apartment)
       return void res.status(404).json({ error: 'Apartment not found' })
 

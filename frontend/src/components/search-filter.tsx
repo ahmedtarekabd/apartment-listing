@@ -16,18 +16,32 @@ import { Button } from './ui/button'
 const SearchFilter = ({
   search,
   filter,
+  sortBy,
+  sortOrder,
 }: {
   search: string
   filter: string
+  sortBy: string
+  sortOrder: string
 }) => {
   const router = useRouter()
   const [searchInput, setSearchInput] = useState(search)
   const [filterInput, setFilterInput] = useState(filter)
+  const sortByOptions = [
+    { value: 'created_at', label: 'Created At' },
+    { value: 'price', label: 'Price' },
+    { value: 'unit_name', label: 'Unit Name' },
+    { value: 'project', label: 'Project' },
+  ]
+  const [sortByInput, setSortBy] = useState(sortBy)
+  const [sortOrderInput, setSortOrder] = useState(sortOrder)
   const handleSearch = () => {
     const params = new URLSearchParams()
     params.set('page', '1')
     if (searchInput) params.set('search', searchInput)
     if (filterInput && filterInput != 'all') params.set('projects', filterInput)
+    if (sortByInput) params.set('sortBy', sortByInput)
+    if (sortOrderInput) params.set('sortOrder', sortOrderInput)
     router.push(`/apartments?${params.toString()}`)
   }
   return (
@@ -63,6 +77,42 @@ const SearchFilter = ({
           </SelectContent>
         </Select>
       </div>
+      <div className='w-full md:w-48'>
+        <Select
+          value={sortByInput}
+          onValueChange={(value) => {
+            setSortBy(value)
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder='Sort by...' />
+          </SelectTrigger>
+          <SelectContent>
+            {sortByOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className='w-full md:w-48'>
+        <Select
+          value={sortOrderInput}
+          onValueChange={(value) => {
+            setSortOrder(value)
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder='Sort order...' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='asc'>Ascending</SelectItem>
+            <SelectItem value='desc'>Descending</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      {/* Apply Filters Button */}
       <Button onClick={handleSearch}>Apply Filters</Button>
     </div>
   )

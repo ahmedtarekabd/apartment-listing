@@ -50,6 +50,8 @@ export const paginationSchema = z.object({
     .optional(),
   search: z.string().optional(),
   projects: z.string().optional(),
+  sortBy: z.enum(['created_at', 'price', 'unit_name', 'project']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
 })
 
 export const apartmentsArraySchema = z.array(apartmentsSchema)
