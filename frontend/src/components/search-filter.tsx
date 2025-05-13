@@ -9,9 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from './ui/button'
+import axios from '@/lib/axios'
 
 const SearchFilter = ({
   search,
@@ -25,6 +26,7 @@ const SearchFilter = ({
   sortOrder: string
 }) => {
   const router = useRouter()
+  const [projects, setProjects] = useState([])
   const [searchInput, setSearchInput] = useState(search)
   const [filterInput, setFilterInput] = useState(filter)
   const sortByOptions = [
@@ -44,6 +46,19 @@ const SearchFilter = ({
     if (sortOrderInput) params.set('sortOrder', sortOrderInput)
     router.push(`/apartments?${params.toString()}`)
   }
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await axios.get('/projects')
+        setProjects(response.data)
+      } catch (error) {
+        console.error('Error fetching projects:', error)
+      }
+    }
+    fetchProjects()
+  }, [])
+
   return (
     <div className='mb-8 flex flex-col gap-4 md:flex-row'>
       <div className='flex-1'>
@@ -71,9 +86,11 @@ const SearchFilter = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value='all'>All Projects</SelectItem>
-            <SelectItem value='project A'>Project A</SelectItem>
-            <SelectItem value='project B'>Project B</SelectItem>
-            <SelectItem value='project C'>Project C</SelectItem>
+            {projects.map((project) => (
+              <SelectItem key={project} value={project}>
+                {project}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
