@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const apartmentsIdSchema = z.object({
   // Source: https://github.com/colinhacks/zod/discussions/330#:~:text=Nov%203%2C%202022-,How%20about%20this%3F,-z.preprocess(%0A%20%20Number
-  id: z.preprocess(Number, z.number().positive()),
+  id: z.string(),
 })
 
 export const apartmentsSchema = z.object({

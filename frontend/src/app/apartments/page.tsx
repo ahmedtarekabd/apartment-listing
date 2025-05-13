@@ -51,9 +51,9 @@ export default async function ApartmentsPage({
     // Handle other errors
     if (axios.isAxiosError(error) && error.status != 404) {
       console.error('Error fetching apartments:', error.status)
-      errorMessage =
-        `${error.message} - ${error.response?.data.error}` ||
-        'Failed to fetch apartments.'
+      errorMessage = error.message
+        ? `${error.message} - ${error.response?.data.error}`
+        : 'Failed to fetch apartments.'
     }
   }
 

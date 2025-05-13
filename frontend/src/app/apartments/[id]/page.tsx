@@ -81,7 +81,9 @@ export default function ApartmentDetailsPage() {
                 <Image
                   src={apartment.images[activeImage] || '/placeholder.svg'}
                   alt={apartment.unit_name}
-                  layout='fill'
+                  // layout='fill'
+                  width={400}
+                  height={400}
                   className='h-full w-full object-cover'
                 />
               ) : (

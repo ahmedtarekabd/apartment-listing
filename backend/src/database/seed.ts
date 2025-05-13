@@ -2,10 +2,20 @@ import fs from 'fs'
 import prisma from './prisma'
 import { Apartment } from '../generated/prisma'
 
+const forceUpdate = process.env.FORCE_UPDATE === 'true' || false
+
 async function main() {
   // Check if apartments data already exist to avoid duplication
   const count = await prisma.apartment.count()
-  if (count > 0) return
+  if (count > 0) {
+    if (forceUpdate) {
+      console.log('Apartments already exist. Force updating...')
+      await prisma.apartment.deleteMany()
+    } else {
+      console.log('Apartments already exist. Skipping seeding.')
+      return
+    }
+  }
 
   console.log('Seeding apartments...')
 

@@ -1,158 +1,7 @@
 import { Request, Response } from 'express'
 import { strToList } from '../lib/utils'
-
-const apartmentsList = [
-  {
-    id: 1,
-    unit_name: 'Apartment A',
-    unit_number: '101',
-    project: 'Project A',
-    description: 'A cozy apartment with a beautiful view.',
-    price: 1200,
-    images: [],
-    address: '',
-    city: '',
-    country: '',
-    created_at: '',
-    updated_at: '',
-    deleted_at: '',
-  },
-  {
-    id: 2,
-    unit_name: 'Apartment B',
-    unit_number: '102',
-    project: 'Project B',
-    description: 'A spacious apartment with modern amenities.',
-    price: 1500,
-    images: [],
-    address: '',
-    city: '',
-    country: '',
-    created_at: '',
-    updated_at: '',
-    deleted_at: '',
-  },
-  {
-    id: 3,
-    unit_name: 'Apartment A',
-    unit_number: '101',
-    project: 'Project A',
-    description: 'A cozy apartment with a beautiful view.',
-    price: 1200,
-    images: [],
-    address: '',
-    city: '',
-    country: '',
-    created_at: '',
-    updated_at: '',
-    deleted_at: '',
-  },
-  {
-    id: 4,
-    unit_name: 'Apartment B',
-    unit_number: '102',
-    project: 'Project B',
-    description: 'A spacious apartment with modern amenities.',
-    price: 1500,
-    images: [],
-    address: '',
-    city: '',
-    country: '',
-    created_at: '',
-    updated_at: '',
-    deleted_at: '',
-  },
-  {
-    id: 5,
-    unit_name: 'Apartment A',
-    unit_number: '101',
-    project: 'Project A',
-    description: 'A cozy apartment with a beautiful view.',
-    price: 1200,
-    images: [],
-    address: '',
-    city: '',
-    country: '',
-    created_at: '',
-    updated_at: '',
-    deleted_at: '',
-  },
-  {
-    id: 6,
-    unit_name: 'Apartment B',
-    unit_number: '102',
-    project: 'Project B',
-    description: 'A spacious apartment with modern amenities.',
-    price: 1500,
-    images: [],
-    address: '',
-    city: '',
-    country: '',
-    created_at: '',
-    updated_at: '',
-    deleted_at: '',
-  },
-  {
-    id: 7,
-    unit_name: 'Apartment A',
-    unit_number: '101',
-    project: 'Project A',
-    description: 'A cozy apartment with a beautiful view.',
-    price: 1200,
-    images: [],
-    address: '',
-    city: '',
-    country: '',
-    created_at: '',
-    updated_at: '',
-    deleted_at: '',
-  },
-  {
-    id: 8,
-    unit_name: 'Apartment B',
-    unit_number: '102',
-    project: 'Project B',
-    description: 'A spacious apartment with modern amenities.',
-    price: 1500,
-    images: [],
-    address: '',
-    city: '',
-    country: '',
-    created_at: '',
-    updated_at: '',
-    deleted_at: '', 
-  },
-  {
-    id: 9,
-    unit_name: 'Apartment A',
-    unit_number: '101',
-    project: 'Project A',
-    description: 'A cozy apartment with a beautiful view.',
-    price: 1200,
-    images: [],
-    address: '',
-    city: '',
-    country: '',
-    created_at: '',
-    updated_at: '',
-    deleted_at: '',
-  },
-  {
-    id: 10,
-    unit_name: 'Apartment B',
-    unit_number: '102',
-    project: 'Project B',
-    description: 'A spacious apartment with modern amenities.',
-    price: 1500,
-    images: [],
-    address: '',
-    city: '',
-    country: '',
-    created_at: '',
-    updated_at: '',
-    deleted_at: '',
-  },
-]
+import prisma from '../database/prisma'
+import { Prisma } from '../generated/prisma'
 
 export const getApartments = async (req: Request, res: Response) => {
   try {
@@ -161,31 +10,67 @@ export const getApartments = async (req: Request, res: Response) => {
     const limitNumber = Number(limit)
     const offset = (pageNumber - 1) * limitNumber
 
-    const filteredApartments = apartmentsList.filter((apartment) => {
-      const searchLower = search.toString().toLowerCase()
-      const searchMatch =
-        apartment.unit_name.toLowerCase().includes(searchLower) ||
-        apartment.unit_number.toLowerCase().includes(searchLower) ||
-        apartment.project.toLowerCase().includes(searchLower) ||
-        apartment.description.toLowerCase().includes(searchLower)
+    const where: Prisma.ApartmentWhereInput = {
+      AND: [
+        {
+          OR: search
+            ? [
+                {
+                  unit_name: {
+                    contains: search.toString(),
+                    mode: Prisma.QueryMode.insensitive,
+                  },
+                },
+                {
+                  unit_number: {
+                    contains: search.toString(),
+                    mode: Prisma.QueryMode.insensitive,
+                  },
+                },
+                {
+                  project: {
+                    contains: search.toString(),
+                    mode: Prisma.QueryMode.insensitive,
+                  },
+                },
+                {
+                  description: {
+                    contains: search.toString(),
+                    mode: Prisma.QueryMode.insensitive,
+                  },
+                },
+              ]
+            : undefined,
+        },
+        {
+          project: projects
+            ? {
+                in: strToList(projects.toString()),
+              }
+            : undefined,
+        },
+      ].filter(Boolean), // Remove undefined conditions
+    }
 
-      const projectMatch = strToList(projects.toString()).some((project) => {
-        return apartment.project.toLowerCase().includes(project.toLowerCase())
-      })
+    const [apartments, totalApartments] = await prisma.$transaction([
+      prisma.apartment.findMany({
+        skip: offset,
+        take: limitNumber,
+        where: where,
+        orderBy: {
+          created_at: 'desc',
+        },
+      }),
+      prisma.apartment.count({ where: where }),
+    ])
 
-      return (
-        (searchMatch || searchLower === '') && (projectMatch || projects === '')
-      )
-    })
-
-    const apartments = filteredApartments.slice(offset, offset + limitNumber)
-    const totalPages = Math.ceil(filteredApartments.length / limitNumber)
+    const totalPages = Math.ceil(totalApartments / limitNumber)
     if (apartments.length === 0)
       return void res
         .status(404)
         .json({ error: 'No apartments found. Try adjusting your search.' })
 
-    if (offset >= apartmentsList.length)
+    if (offset >= totalApartments)
       return void res.status(400).json({
         error: 'Page number exceeds total pages',
       })
@@ -220,9 +105,12 @@ export const getApartments = async (req: Request, res: Response) => {
 export const getApartmentById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const apartment = apartmentsList.find(
-      (apartment) => apartment.id === Number(id)
-    )
+    const apartment = await prisma.apartment.findUnique({
+      where: {
+        id: id,
+      },
+    })
+    console.log('Apartment:', apartment)
     if (!apartment)
       return void res.status(404).json({ error: 'Apartment not found' })
 
@@ -246,22 +134,19 @@ export const addApartment = async (req: Request, res: Response) => {
       city,
       country,
     } = req.body
-    const newApartment = {
-      id: apartmentsList.length + 1,
-      unit_name,
-      unit_number,
-      description,
-      project,
-      price,
-      images,
-      address,
-      city,
-      country,
-      created_at: '',
-      updated_at: '',
-      deleted_at: '',
-    }
-    apartmentsList.push(newApartment)
+    const newApartment = await prisma.apartment.create({
+      data: {
+        unit_name,
+        unit_number,
+        description,
+        project,
+        price,
+        images,
+        address,
+        city,
+        country,
+      },
+    })
 
     res.status(201).json(newApartment)
   } catch (error) {
